@@ -9,7 +9,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ===============================
 // SECURITY: API KEY CHECKER
+// ===============================
 app.use((req, res, next) => {
   const key = req.headers["x-api-key"];
   if (key !== process.env.API_KEY) {
@@ -18,7 +20,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// ===============================
 // Simple Cache (5 min)
+// ===============================
 let cache = {};
 const cacheTime = 5 * 60 * 1000;
 
@@ -37,7 +41,9 @@ function cachedFetch(key, fetchFn) {
   });
 }
 
+// ===============================
 // BASE URL (SOURCE)
+// ===============================
 const BASE = "https://free-ff-api-src-5plp.onrender.com/api/v1";
 
 // =====================================
@@ -45,19 +51,14 @@ const BASE = "https://free-ff-api-src-5plp.onrender.com/api/v1";
 // =====================================
 app.get("/account", async (req, res) => {
   const { region, uid } = req.query;
-
   if (!region || !uid) {
     return res.status(400).json({ error: "Missing region or uid" });
   }
-
   try {
     const data = await cachedFetch(`/acc-${region}-${uid}`, async () => {
-      const response = await axios.get(
-        `${BASE}/account?region=${region}&uid=${uid}`
-      );
+      const response = await axios.get(`${BASE}/account?region=${region}&uid=${uid}`);
       return response.data;
     });
-
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch account data" });
@@ -69,19 +70,14 @@ app.get("/account", async (req, res) => {
 // =====================================
 app.get("/playerstats", async (req, res) => {
   const { region, uid } = req.query;
-
   if (!region || !uid) {
     return res.status(400).json({ error: "Missing region or uid" });
   }
-
   try {
     const data = await cachedFetch(`/stats-${region}-${uid}`, async () => {
-      const response = await axios.get(
-        `${BASE}/playerstats?region=${region}&uid=${uid}`
-      );
+      const response = await axios.get(`${BASE}/playerstats?region=${region}&uid=${uid}`);
       return response.data;
     });
-
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch player stats" });
@@ -93,19 +89,14 @@ app.get("/playerstats", async (req, res) => {
 // =====================================
 app.get("/craftlandProfile", async (req, res) => {
   const { region, uid } = req.query;
-
   if (!region || !uid) {
     return res.status(400).json({ error: "Missing region or uid" });
   }
-
   try {
     const data = await cachedFetch(`/craft-${region}-${uid}`, async () => {
-      const response = await axios.get(
-        `${BASE}/craftlandProfile?region=${region}&uid=${uid}`
-      );
+      const response = await axios.get(`${BASE}/craftlandProfile?region=${region}&uid=${uid}`);
       return response.data;
     });
-
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch profile" });
@@ -117,16 +108,12 @@ app.get("/craftlandProfile", async (req, res) => {
 // =====================================
 app.get("/guildInfo", async (req, res) => {
   const { region, uid } = req.query;
-
   if (!region || !uid) {
     return res.status(400).json({ error: "Missing region or uid" });
   }
-
   try {
     const data = await cachedFetch(`/guild-${region}-${uid}`, async () => {
-      const response = await axios.get(
-        `${BASE}/guildInfo?region=${region}&uid=${uid}`
-      );
+      const response = await axios.get(`${BASE}/guildInfo?region=${region}&uid=${uid}`);
       return response.data;
     });
     res.json(data);
@@ -141,5 +128,36 @@ app.get("/", (req, res) => {
 });
 
 // START SERVER
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 export default app;
+
+// ===============================
+// EXAMPLES REQUESTS USING AXIOS
+// ===============================
+/*
+import axios from "axios";
+
+const API_KEY = "YOUR_API_KEY_HERE";
+
+// 1️⃣ Account Lookup
+axios.get("http://localhost:3000/account?region=NA&uid=123456", {
+  headers: { "x-api-key": API_KEY }
+}).then(res => console.log(res.data));
+
+// 2️⃣ Player Stats
+axios.get("http://localhost:3000/playerstats?region=NA&uid=123456", {
+  headers: { "x-api-key": API_KEY }
+}).then(res => console.log(res.data));
+
+// 3️⃣ Craftland Profile
+axios.get("http://localhost:3000/craftlandProfile?region=NA&uid=123456", {
+  headers: { "x-api-key": API_KEY }
+}).then(res => console.log(res.data));
+
+// 4️⃣ Guild Info
+axios.get("http://localhost:3000/guildInfo?region=NA&uid=123456", {
+  headers: { "x-api-key": API_KEY }
+}).then(res => console.log(res.data));
+*/
